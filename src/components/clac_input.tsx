@@ -1,10 +1,8 @@
-import React, { useState } from "react";
+import React from "react";
 
-import { InputAdornment, TextField, Chip, Stack, Paper, Typography } from "@mui/material";
+import { InputAdornment, TextField, Chip, Stack, Typography } from "@mui/material";
 
 import CalculateIcon from '@mui/icons-material/Calculate';
-
-type ClacOperator = number | string;
 
 const keywords: Set<string> = new Set([
     "print", "quit", "+", "-", "*", "/", "%", "**", "<", "drop", "swap", "rot", "if",
@@ -18,7 +16,6 @@ function parseInput(input: string): Array<ClacOperator> {
     let parsed: Array<ClacOperator> = [];
     tokens.forEach((token) => {
         if (isNaN(parseInt(token))){
-            console.log(token);
             parsed.push(token);
         } else {
             parsed.push(parseInt(token));
@@ -29,23 +26,24 @@ function parseInput(input: string): Array<ClacOperator> {
 
 function showParsedResult(parsed: Array<ClacOperator>){
     if (parsed.length === 0){
-        return <Typography variant='body2'>No Input Yet</Typography>
+        return <Typography variant='body2'></Typography>
     }
     let chips: Array<React.ReactElement> = [];
+    let i = 0;
     parsed.forEach(token => {
         if (typeof token === 'number') {
-            chips.push(<Chip label={"" + token}/>);
+            chips.push(<Chip label={"" + token} key={i}/>);
         } else if (keywords.has(token)) {
-            chips.push(<Chip label={token} variant='outlined' color='primary'/>);
+            chips.push(<Chip label={token} variant='outlined' color='primary' key={i}/>);
         } else {
-            chips.push(<Chip label={token} variant='outlined'/>);
+            chips.push(<Chip label={token} variant='outlined' key={i}/>);
         }
+        i ++;
     });
     return chips;
 }
 
-function ClacUserInterface() {
-    const [inputTokens, setInputTokens] = useState<ClacOperator[]>([]);
+function ClacUserInterface(props: any) {
     return (
         <Stack spacing={2}>
             <TextField
@@ -55,13 +53,15 @@ function ClacUserInterface() {
                         <InputAdornment position='start'>
                             <CalculateIcon/>
                         </InputAdornment>
-                    )
+                    ),
+                    className: "user-input"
                 }}
-                onChange={(e) => {setInputTokens(parseInput(e.target.value));}}
+                inputRef = {props.inputRef}
+                onChange={(e) => {props.setInputTokens(parseInput(e.target.value));}}
             />
             <Typography>Parsed Result: </Typography>
-            <Stack direction='row' spacing={0.5}>
-                {showParsedResult(inputTokens)}
+            <Stack direction='row' spacing={0.5} sx={{minHeight: '2rem', overflowX: 'auto'}}>
+                {showParsedResult(props.inputTokens)}
             </Stack>
         </Stack>
     );
