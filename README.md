@@ -1,46 +1,58 @@
-# Getting Started with Create React App
+# TypeScript *Clac*ulator
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+An implementation of the `Clac` language in *15-122 Imperative Programming* with TypeScript.
 
-## Available Scripts
+## The Clac Language
 
-In the project directory, you can run:
+*Clac* is a stack-based language. All operators are in a queue, and operands are in a stack. Everytime, an operator will obtain operand from the stack and push the result back to stack.
 
-### `npm start`
+*Clac* uses a postfix expression to calculate, that is, you need to write `1 1 +` instead of `1 + 1`.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+There are a series of native operators defined in Clac, shown as follow:
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+<img width="831" alt="Screen Shot 2022-03-05 at 17 09 09" src="https://user-images.githubusercontent.com/47029019/156901409-ec3e5341-5ccb-49c6-8235-5c43695e78e4.png">
 
-### `npm test`
+**What makes Clac powerful is the abilty to define Symbols (Macros).** You can define a specific symbol as a queue of operands. Everytime the interpretor meets a new symbol, it will replace it with the pre-defined queue of operands.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+What's more, you can define new symbols upon previously defined symbols. This provides very useful abstraction tool.
 
-### `npm run build`
+The syntax for defining symbol is
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```
+: Symbol op1 op2 op3 ;
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+For example, below lines define two Symbols - `dup` and `square`
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```
+// Note: TypeScript clac does NOT support comment, do not put anything after (including) "//" into the input.
+: dup 1 pick ;    // S: x => S: x, x
+: square dup * ;  // S: x => S: x**2
+```
+## How to Use It (Web Version)
 
-### `npm run eject`
+Type your clac line into the input box, then
+* Click `STEP` if you want to see it executing step-by-step.
+* Click `RUN` if you just want to execute it with one click.
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+## How to Run (Locally)
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Open the terminal in root directory of this repo, then run with
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+```shell
+$ npm start
+```
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+## How to Deploy (to GitHub Pages)
 
-## Learn More
+```
+$ npm run deploy
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## TODO
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+* Elegant Error Handling (Currently use `alert` directly because I'm tired)
+* 🛠️ Improve Symbol define function such to enable nested definition of symbol. For instance, the following sequence should be valid.
+  ```
+  : redef_f : f 2 + ; ;
+  ```
