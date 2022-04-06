@@ -44,27 +44,49 @@ function showParsedResult(parsed: Array<ClacOperator>){
 }
 
 function ClacUserInterface(props: any) {
-    return (
-        <Stack spacing={2}>
-            <TextField
-                variant="outlined"
-                InputProps = {{
-                    startAdornment: (
-                        <InputAdornment position='start'>
-                            <CalculateIcon/>
-                        </InputAdornment>
-                    ),
-                    className: "user-input"
-                }}
-                inputRef = {props.inputRef}
-                onChange={(e) => {props.setInputTokens(parseInput(e.target.value));}}
-            />
-            <Typography>Parsed Result: </Typography>
-            <Stack direction='row' spacing={0.5} sx={{minHeight: '2rem', overflowX: 'auto'}}>
-                {showParsedResult(props.inputTokens)}
+    if (props.displayMode === "full-page"){
+        return (
+            <Stack spacing={2}>
+                <TextField
+                    variant="outlined"
+                    InputProps = {{
+                        startAdornment: (
+                            <InputAdornment position='start'>
+                                <CalculateIcon/>
+                            </InputAdornment>
+                        ),
+                        className: "user-input"
+                    }}
+                    inputRef = {props.inputRef}
+                    onChange={(e) => {props.setInputTokens(parseInput(e.target.value));}}
+                />
+                <Typography>Parsed Result: </Typography>
+                <Stack direction='row' spacing={0.5} sx={{minHeight: '2rem', overflowX: 'auto'}}>
+                    {showParsedResult(props.inputTokens)}
+                </Stack>
             </Stack>
-        </Stack>
-    );
+        );
+    } else {
+        return (
+            <Stack spacing={0.5}>
+                <Stack direction='row' spacing={0.5}>
+                    <TextField
+                        variant="outlined"
+                        InputProps = {{
+                            className: "user-input"
+                        }}
+                        inputRef = {props.inputRef}
+                        onChange={(e) => {props.setInputTokens(parseInput(e.target.value));}}
+                        size="small"
+                        sx= {{ flexGrow: 1 }}
+                    />
+                    {props.restart_btn}
+                    {props.step_btn}
+                    {props.run_btn}
+                </Stack>
+            </Stack>
+        );
+    }
 }
 
 export default ClacUserInterface;
