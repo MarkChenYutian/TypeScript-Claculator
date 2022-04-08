@@ -103,7 +103,7 @@ function App(props: any) {
                         displayMode="full-page"
                     />
                     <Divider></Divider>
-                    <Typography variant='h4'>Output</Typography>
+                    <Typography variant='h4'>Printouts</Typography>
                     <pre id="claculator-output" style={{backgroundColor: grey[200], minHeight: "3rem", borderRadius: "0.5rem", padding: "0.5rem 2rem"}}>
     
                     </pre>
@@ -155,7 +155,7 @@ function App(props: any) {
                     />
                     <Divider style={{ margin: "1rem 0" }}></Divider>
                     <ClacStateDisplay state={clacState} displayMode="embedding"/>
-                    <Typography variant='body1'>Output</Typography>
+                    <Typography variant='body1'>Printout</Typography>
                     <Box sx={{ border: '1px solid #CBCBCB', borderRadius: '.5rem', p: 1, minHeight: '1rem'}}>
                         <Typography>
                             <pre id="claculator-output" style={{ maxHeight: '10rem', overflowY: 'auto' }}>

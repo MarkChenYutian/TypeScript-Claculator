@@ -28,7 +28,8 @@
     "eject": "react-scripts eject",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
-    "build:widget": "parcel build src/index.tsx --no-source-maps -d widget && cp build/static/css/*.css widget/index.css"
+    "build:widget": "parcel build src/index.tsx --no-source-maps -d widget && cp build/static/css/*.css widget/index.css",
+    "build:obfuscate": "javascript-obfuscator widget/index.js --compact true --control-flow-flattening true --control-flow-flattening-threshold 0.75 --simplify true --split-strings true --transform-object-keys true --log true --output widget/index.min.js"
   },
   "eslintConfig": {
     "extends": [
@@ -50,6 +51,7 @@
   },
   "devDependencies": {
     "gh-pages": "^3.2.3",
+    "javascript-obfuscator": "^4.0.0",
     "parcel-bundler": "^1.12.5"
   }
 }
