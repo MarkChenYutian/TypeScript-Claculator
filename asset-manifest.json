@@ -1,10 +1,10 @@
 {
   "files": {
-    "main.js": "/TypeScript-Claculator/static/js/main.51a587ff.js",
+    "main.js": "/TypeScript-Claculator/static/js/main.402106e9.js",
     "index.html": "/TypeScript-Claculator/index.html",
-    "main.51a587ff.js.map": "/TypeScript-Claculator/static/js/main.51a587ff.js.map"
+    "main.402106e9.js.map": "/TypeScript-Claculator/static/js/main.402106e9.js.map"
   },
   "entrypoints": [
-    "static/js/main.51a587ff.js"
+    "static/js/main.402106e9.js"
   ]
 }
