@@ -1,54 +1,19 @@
-import { Stack, Typography, Paper, Chip, Divider } from "@mui/material";
+import { Stack, Typography, Paper, Divider, Container } from "@mui/material";
 
-const keywords: Set<string> = new Set([
-    "print", "quit", "+", "-", "*", "/", "%", "**", "<", "drop", "swap", "rot", "if",
-    "pick", "skip", ":", ";"
-]);
+import { ClacToken, id } from "./clac_token";
 
-const id = () => {
-    return Math.floor((1 + Math.random()) * 0x10000)
-        .toString(16)
-        .substring(1);
-};
-
-function ClacStateDisplay(props: any) {
+export function EmbedClacStateDisplay(props: any) {
     const S: ClacState = props.state;
-
-    if (props.displayMode === "full-page"){
-        return (
-            <Stack spacing={2}>
-                <Typography variant="h6">Operand Stack</Typography>
-                <Paper>
-                    <Stack direction="row" sx={{ minHeight: "2rem", p: 1, overflowX: "auto"}} spacing={1}>
-                        {
-                        S.S.length > 0 ? S.S.map((elem) => {
-                            return <Chip label={elem} key={id()}/>;
-                        }) : <Typography variant="body1"><i>(Empty)</i></Typography>
-                        }
-                    </Stack>
-                </Paper>
-                <Typography variant="h6">Operator Queue</Typography>
-                <Paper>
-                    <Stack direction="row" sx={{ minHeight: "2rem", p: 1, overflowX: "auto" }} spacing={1}>
-                        {
-                        S.Q.length > 0 ? S.Q.map((elem) => {
-                            return <Chip label={elem} key={id()}/>;
-                        }) : <Typography variant="body1"><i>(Empty)</i></Typography>
-                        }
-                    </Stack>
-                </Paper>
-            </Stack>
-        );
-    } else {
-        return (
-            <Stack spacing={2} direction='row' sx={{overflowX: "auto", p: 1, alignItems: "center"}}>
+    return (
+        <Container>
+            <Stack spacing={2} direction='row' sx={{overflowX: "auto", alignItems: "center", padding: "0.2rem 0"}}>
                 <Stack spacing={0.5} direction="column" sx={{flexGrow: 1}}>
                     <Typography variant="body1">Stack</Typography>
                     <Paper sx={{ flexGrow: 1 }}>
                         <Stack direction="row" sx={{ minHeight: "2rem", p: 1, overflowX: "auto"}} spacing={1}>
                             {
                             S.S.length > 0 ? S.S.map((elem) => {
-                                return <Chip label={elem} key={id()}/>;                            
+                                return <ClacToken token={elem} key={id()}/>;
                             }) : <Typography variant="body1"><i>(Empty)</i></Typography>
                             }
                         </Stack>
@@ -61,19 +26,13 @@ function ClacStateDisplay(props: any) {
                         <Stack direction="row" sx={{ minHeight: "2rem", p: 1, overflowX: "auto" }} spacing={1}>
                             {
                             S.Q.length > 0 ? S.Q.map((elem) => {
-                                if (keywords.has("" + elem)){
-                                    return <Chip label={elem} key={id()} color="primary"/>;
-                                } else {
-                                    return <Chip label={elem} key={id()}/>;
-                                }
+                                return <ClacToken token={elem} key={id()}/>;
                             }) : <Typography variant="body1"><i>(Empty)</i></Typography>
                             }
                         </Stack>
                     </Paper>
                 </Stack>
             </Stack>
-        )
-    }
+        </Container>
+    );
 }
-
-export default ClacStateDisplay;

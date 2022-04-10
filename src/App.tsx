@@ -1,38 +1,71 @@
 import React, { useState } from 'react';
 
-import { Typography, Container, Stack, Button, Divider, Box} from '@mui/material';
+import { Typography, Container, Stack, Button, Divider, Box, Alert, AlertTitle, IconButton, Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material';
 
 import PlayArrowTwoToneIcon from '@mui/icons-material/PlayArrowTwoTone';
 import SkipNextTwoToneIcon from '@mui/icons-material/SkipNextTwoTone';
+import SettingsIcon from '@mui/icons-material/Settings';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 
-import ClacUserInterface from './components/clac_input';
+import { EmbedClacUserInterface } from './components/clac_input';
+import { EmbedClacStateDisplay } from './components/clac_state';
 import FunctionTable from './components/func_table';
-import ClacStateDisplay from './components/clac_state';
+
 
 import * as ClacCore from './functions/clac_core';
-import { grey } from '@mui/material/colors';
+import { Check } from '@mui/icons-material';
+import { ClacStateTrace } from './components/clac_trace';
+
+function stateEqual(s1: ClacState, s2: ClacState): boolean {
+    if (s1 === undefined || s2 === undefined) return false;
+    return (s1.S.length === s2.S.length && s1.S.every((val, index) => val === s2.S[index]))
+        && (s1.Q.length === s2.Q.length && s1.Q.every((val, index) => val === s2.Q[index]));
+}
 
 function updateState_Step(state: ClacState,
                      inputSeq: ClacOperator[],
+                     history: ClacState[],
                      setState: Function,
                      setInputSeq: Function,
+                     setErr: Function,
+                     setHistory: Function,
                      inputRef: React.MutableRefObject<any>,
                      mode: "step" | "run"
                      ){
+    let newhistory = [...history];
     if (mode === "step"){
         try{
             const newState = ClacCore.step(state);
+            if (!stateEqual(newState, history[history.length - 1])) {
+                newhistory.push(
+                    {
+                        S: [...newState.S],
+                        Q: [...newState.Q],
+                        T: newState.T
+                    }
+                );
+                setHistory(newhistory);
+            }
             setState(newState);
         } catch (e) {
-            alert(e + "\n(You may need to RESTART clac-ulator to make it function properly)");
+            setErr(e + "");
         }
     } else {
         try{
             const newState = ClacCore.run(state);
+            if (!stateEqual(newState, history[history.length - 1])) {
+                newhistory.push(
+                    {
+                        S: [...newState.S],
+                        Q: [...newState.Q],
+                        T: newState.T
+                    }
+                );
+                setHistory(newhistory);
+            }
             setState(newState);
         } catch (e) {
-            alert(e + "\n(You may need to RESTART clac-ulator to make it function properly)");
+            setErr(e + "");
         }
     }
     if (inputRef.current.value !== ""){
@@ -52,121 +85,117 @@ function App(props: any) {
         Q: [],
         T: new Map<string, Array<ClacOperator>>()
     });
+    // Error Handle
+    const [err, setErrMessage] = useState<string>("");
+    // Settings Menu
+    const [MenuAnchor, setMenuAnchor] = React.useState<null | HTMLElement>(null);
+    const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+        setMenuAnchor(event.currentTarget);
+      };
+    const handleClose = () => {
+        setMenuAnchor(null);
+    };
+    // Settings State
+    const [setting, setSetting] = useState<SettingState>({
+        showFunctions: false,
+        showTrace: false
+    });
+    // Clac Trace
+    const [history, setHistory] = useState<ClacState[]>([]);
     // Clear textfield
     const textInputRef = React.useRef(null);
 
-    if (props.styleMode === "full-page"){
-        return (
-            <Container maxWidth='lg'>
-                <Stack spacing={2}>
-                    <Typography variant='h3'>TypeScript <i>Clac</i>-ulator</Typography>
-                    <Stack direction='row' spacing={2} flexWrap='wrap'>
+    return (
+        <Container>
+            <Box sx={{ width: '100%', border: '1px solid #CBCBCB', borderRadius: '.5rem', p: 1 }}>
+                <EmbedClacUserInterface
+                    setInputTokens={setInputTokens}
+                    inputTokens={inputTokens}
+                    inputRef={textInputRef}
+                    restart_btn={
                         <Button
-                            variant='outlined'
-                            startIcon={<RestartAltIcon/>}
-                            color="error"
-                            onClick={() => {
-                                ClacCore.restart(setClacState);
-                            }}
-                        >Restart</Button>
+                        variant='outlined' startIcon={<RestartAltIcon/>} color="error"
+                        onClick={() => { ClacCore.restart(setClacState, setErrMessage, setHistory); }}>
+                            Restart
+                        </Button>
+                    }
+                    step_btn={
                         <Button
-                            variant='outlined'
-                            startIcon={<PlayArrowTwoToneIcon/>}
-                            color="success"
-                            onClick={() => updateState_Step(
-                                                        clacState,
-                                                        inputTokens,
-                                                        setClacState,
-                                                        setInputTokens,
-                                                        textInputRef,
-                                                        "step"
-                                    )}
-                        >Step</Button>
+                        variant='outlined' startIcon={<PlayArrowTwoToneIcon/>} color="success"
+                        onClick={() => updateState_Step(
+                            clacState, inputTokens, history, setClacState, setInputTokens, setErrMessage, setHistory, textInputRef, "step"
+                        )}>
+                            Step
+                        </Button>}
+                    run_btn={
                         <Button
-                            variant='outlined'
-                            startIcon={<SkipNextTwoToneIcon/>}
-                            color="success"
-                            onClick={() => updateState_Step(
-                                                        clacState,
-                                                        inputTokens,
-                                                        setClacState,
-                                                        setInputTokens,
-                                                        textInputRef,
-                                                        "run"
-                                    )}
-                        >Run All</Button>
-                    </Stack>
-                    <ClacUserInterface
-                        setInputTokens={setInputTokens}
-                        inputTokens={inputTokens}
-                        inputRef={textInputRef}
-                        displayMode="full-page"
-                    />
-                    <Divider></Divider>
-                    <Typography variant='h4'>Printouts</Typography>
-                    <pre id="claculator-output" style={{backgroundColor: grey[200], minHeight: "3rem", borderRadius: "0.5rem", padding: "0.5rem 2rem"}}>
-    
-                    </pre>
-                    <Divider></Divider>
-                    <Typography variant='h4'>Claculator State</Typography>
-                    <ClacStateDisplay state={clacState} displayMode="full-page"/>
-    
-                    <Typography variant='h6'>Defined Symbols</Typography>
-                    <FunctionTable S={clacState} />
-                </Stack>
-            </Container>
-        );
-    } else {
+                        variant='outlined' startIcon={<SkipNextTwoToneIcon/>} color="success"
+                        onClick={() => updateState_Step(
+                            clacState, inputTokens, history, setClacState, setInputTokens, setErrMessage, setHistory, textInputRef, "run"
+                        )}>
+                            Run
+                        </Button>
+                    }
+                />
+                { err === "" ? undefined : <Alert severity='warning' sx={{m: 1}}>
+                    <AlertTitle>Clac Core Exception</AlertTitle>
+                    {err}
+                    </Alert>
+                }
 
-        return (
-            <Container>
-                <Box sx={{ width: '100%', border: '1px solid #CBCBCB', borderRadius: '.5rem', p: 1 }}>
-                    <ClacUserInterface
-                        setInputTokens={setInputTokens}
-                        inputTokens={inputTokens}
-                        inputRef={textInputRef}
-                        displayMode="embedding"
-                        restart_btn={
-                            <Button
-                            variant='outlined'
-                            startIcon={<RestartAltIcon/>}
-                            color="error"
-                            onClick={() => {
-                                ClacCore.restart(setClacState);
-                            }}>Restart</Button>
-                        }
-                        step_btn={
-                            <Button
-                            variant='outlined'
-                            startIcon={<PlayArrowTwoToneIcon/>}
-                            color="success"
-                            onClick={() => updateState_Step(
-                                clacState, inputTokens, setClacState, setInputTokens, textInputRef, "step"
-                            )}>Step</Button>}
-                        run_btn={
-                            <Button
-                            variant='outlined'
-                            startIcon={<SkipNextTwoToneIcon/>}
-                            color="success"
-                            onClick={() => updateState_Step(
-                                clacState, inputTokens, setClacState, setInputTokens, textInputRef, "run"
-                            )}>Run</Button>
-                        }
-                    />
-                    <Divider style={{ margin: "1rem 0" }}></Divider>
-                    <ClacStateDisplay state={clacState} displayMode="embedding"/>
-                    <Typography variant='body1'>Printout</Typography>
-                    <Box sx={{ border: '1px solid #CBCBCB', borderRadius: '.5rem', p: 1, minHeight: '1rem'}}>
-                        <Typography>
-                            <pre id="claculator-output" style={{ maxHeight: '10rem', overflowY: 'auto' }}>
-                            </pre>
-                        </Typography>
-                    </Box>
+                <Divider style={{ margin: "1rem 0" }}></Divider>
+                <EmbedClacStateDisplay state={clacState}/>
+                {setting.showFunctions ? <FunctionTable S={clacState}/>: undefined}
+
+                {setting.showTrace ? <Divider style={{ margin: "1rem 0" }}/> : undefined}
+                {setting.showTrace ? <ClacStateTrace history={history}/>: undefined}
+                
+                <Divider style={{ margin: "1rem 0" }}></Divider>
+
+                <Typography variant='body1'>Printout</Typography>
+                <Box sx={{ border: '1px solid #CBCBCB', borderRadius: '.5rem', p: 1, minHeight: '1rem'}}>
+                    <Typography>
+                        <pre id="claculator-output" style={{ maxHeight: '10rem', overflowY: 'auto' }}>
+                        </pre>
+                    </Typography>
                 </Box>
-                <Typography align='right' variant='body2' sx={{ color: "#AAA"}}>Embeddable Clac, by <a href="https://markchenyutian.github.io/blog/about.html">Yutian Chen</a></Typography>
-            </Container>
-        )
-    }
+                <Stack direction="row" sx={{justifyContent: "space-between", alignItems: "center"}}>
+                    <Typography variant='body2' sx={{ color: "#AAA"}}>Embeddable Clac, by <a href="https://markchenyutian.github.io/blog/about.html">Yutian Chen</a></Typography>
+                    <IconButton
+                        onClick={handleClick}
+                    ><SettingsIcon/></IconButton>
+                </Stack>
+                <Menu
+                    id="settings"
+                    MenuListProps={{
+                        'aria-labelledby': 'long-button',
+                    }}
+                    anchorEl={MenuAnchor}
+                    open={Boolean(MenuAnchor)}
+                    onClose={handleClose}
+                >
+                    <MenuItem onClick={() => {setSetting({
+                        showFunctions: setting.showFunctions,
+                        showTrace: !setting.showTrace
+                    })}}>
+                        {setting.showTrace ? <ListItemIcon><Check/></ListItemIcon> : undefined}
+                        <ListItemText inset={!setting.showTrace}>
+                            Show Trace
+                        </ListItemText>
+                    </MenuItem>
+                    <MenuItem onClick={() => {setSetting({
+                        showFunctions: !setting.showFunctions,
+                        showTrace: setting.showTrace
+                    })}}>
+                        {setting.showFunctions ? <ListItemIcon><Check/></ListItemIcon> : undefined}
+                        <ListItemText inset={!setting.showFunctions}>
+                            Show Function Table
+                        </ListItemText>
+                    </MenuItem>
+                </Menu>
+            </Box>
+        </Container>
+    );
 }
 
 export default App;

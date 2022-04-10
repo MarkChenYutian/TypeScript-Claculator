@@ -1,13 +1,5 @@
-import React from "react";
+import { TextField, Stack } from "@mui/material";
 
-import { InputAdornment, TextField, Chip, Stack, Typography } from "@mui/material";
-
-import CalculateIcon from '@mui/icons-material/Calculate';
-
-const keywords: Set<string> = new Set([
-    "print", "quit", "+", "-", "*", "/", "%", "**", "<", "drop", "swap", "rot", "if",
-    "pick", "skip", ":", ";"
-]);
 
 function parseInput(input: string): Array<ClacOperator> {
     input = input.trim();
@@ -24,69 +16,24 @@ function parseInput(input: string): Array<ClacOperator> {
     return parsed;
 }
 
-function showParsedResult(parsed: Array<ClacOperator>){
-    if (parsed.length === 0){
-        return <Typography variant='body2'></Typography>
-    }
-    let chips: Array<React.ReactElement> = [];
-    let i = 0;
-    parsed.forEach(token => {
-        if (typeof token === 'number') {
-            chips.push(<Chip label={"" + token} key={i}/>);
-        } else if (keywords.has(token)) {
-            chips.push(<Chip label={token} variant='outlined' color='primary' key={i}/>);
-        } else {
-            chips.push(<Chip label={token} variant='outlined' key={i}/>);
-        }
-        i ++;
-    });
-    return chips;
-}
-
-function ClacUserInterface(props: any) {
-    if (props.displayMode === "full-page"){
-        return (
-            <Stack spacing={2}>
+export function EmbedClacUserInterface(props: any) {
+    return (
+        <Stack spacing={0.5}>
+            <Stack direction='row' spacing={0.5}>
                 <TextField
                     variant="outlined"
                     InputProps = {{
-                        startAdornment: (
-                            <InputAdornment position='start'>
-                                <CalculateIcon/>
-                            </InputAdornment>
-                        ),
                         className: "user-input"
                     }}
                     inputRef = {props.inputRef}
                     onChange={(e) => {props.setInputTokens(parseInput(e.target.value));}}
+                    size="small"
+                    sx= {{ flexGrow: 1 }}
                 />
-                <Typography>Parsed Result: </Typography>
-                <Stack direction='row' spacing={0.5} sx={{minHeight: '2rem', overflowX: 'auto'}}>
-                    {showParsedResult(props.inputTokens)}
-                </Stack>
+                {props.restart_btn}
+                {props.step_btn}
+                {props.run_btn}
             </Stack>
-        );
-    } else {
-        return (
-            <Stack spacing={0.5}>
-                <Stack direction='row' spacing={0.5}>
-                    <TextField
-                        variant="outlined"
-                        InputProps = {{
-                            className: "user-input"
-                        }}
-                        inputRef = {props.inputRef}
-                        onChange={(e) => {props.setInputTokens(parseInput(e.target.value));}}
-                        size="small"
-                        sx= {{ flexGrow: 1 }}
-                    />
-                    {props.restart_btn}
-                    {props.step_btn}
-                    {props.run_btn}
-                </Stack>
-            </Stack>
-        );
-    }
+        </Stack>
+    );
 }
-
-export default ClacUserInterface;

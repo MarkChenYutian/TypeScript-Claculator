@@ -158,7 +158,7 @@ export function run(state: ClacState) {
     return state;
 }
 
-export function restart(setState: Function){
+export function restart(setState: Function, setErr: Function, setTrace: Function){
     const newState: ClacState = {
         S: [],
         Q: [],
@@ -167,4 +167,6 @@ export function restart(setState: Function){
     const output = document.getElementById("claculator-output");
     if (output !== null) output.textContent = "";
     setState(newState);
+    setErr("");
+    setTrace([]);
 }
