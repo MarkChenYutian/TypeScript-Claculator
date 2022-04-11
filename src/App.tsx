@@ -159,8 +159,7 @@ function App(props: any) {
                         </pre>
                     </Typography>
                 </Box>
-                <Stack direction="row" sx={{justifyContent: "space-between", alignItems: "center"}}>
-                    <Typography variant='body2' sx={{ color: "#AAA"}}>Embeddable Clac, by <a href="https://markchenyutian.github.io/blog/about.html">Yutian Chen</a></Typography>
+                <Stack direction="row" sx={{justifyContent: "flex-end", alignItems: "center"}}>
                     <IconButton
                         onClick={handleClick}
                     ><SettingsIcon/></IconButton>
@@ -173,6 +172,14 @@ function App(props: any) {
                     anchorEl={MenuAnchor}
                     open={Boolean(MenuAnchor)}
                     onClose={handleClose}
+                    anchorOrigin={{
+                        vertical: 'bottom',
+                        horizontal: 'right',
+                    }}
+                    transformOrigin={{
+                        vertical: 'bottom',
+                        horizontal: 'right',
+                    }}
                 >
                     <MenuItem onClick={() => {setSetting({
                         showFunctions: setting.showFunctions,
@@ -194,6 +201,9 @@ function App(props: any) {
                     </MenuItem>
                 </Menu>
             </Box>
+            <Stack direction="row" sx={{justifyContent: "flex-end", alignItems: "center"}}>
+                <Typography variant='body2' sx={{ color: "#AAA"}}>Embeddable Clac, by <a href="https://markchenyutian.github.io/blog/about.html">Yutian Chen</a></Typography>
+            </Stack>
         </Container>
     );
 }
