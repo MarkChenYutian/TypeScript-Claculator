@@ -3,6 +3,8 @@
 import React from 'react';
 import * as ReactDOMClient from 'react-dom/client';
 import App from './App';
+import ScopedCssBaseline from '@mui/material/ScopedCssBaseline';
+import { GlobalStyles } from '@mui/material';
 
 let container = document.getElementById('claculator-interactive');
 if (container == null) {
@@ -11,8 +13,12 @@ if (container == null) {
 const root = ReactDOMClient.createRoot(container);
 root.render(
   <React.StrictMode>
-    <App styleMode={container.dataset.mode}/>
+    <GlobalStyles styles={{
+      p: {margin: '0 !important'}
+    }}/>
+    <ScopedCssBaseline>
+      <App styleMode={container.dataset.mode}/>
+    </ScopedCssBaseline>
   </React.StrictMode>
 );
-console.log(container.dataset.mode);
 

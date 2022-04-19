@@ -1,80 +1,17 @@
 import React, { useState } from 'react';
 
-import { Typography, Container, Stack, Button, Divider, Box, Alert, AlertTitle, IconButton, Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material';
+import { Typography, Container, Stack, Button, Divider, Box, Alert, AlertTitle, Switch, FormControlLabel, FormGroup } from '@mui/material';
 
 import PlayArrowTwoToneIcon from '@mui/icons-material/PlayArrowTwoTone';
 import SkipNextTwoToneIcon from '@mui/icons-material/SkipNextTwoTone';
-import SettingsIcon from '@mui/icons-material/Settings';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 
 import { EmbedClacUserInterface } from './components/clac_input';
 import { EmbedClacStateDisplay } from './components/clac_state';
 import FunctionTable from './components/func_table';
-
-
-import * as ClacCore from './functions/clac_core';
-import { Check } from '@mui/icons-material';
 import { ClacStateTrace } from './components/clac_trace';
 
-function stateEqual(s1: ClacState, s2: ClacState): boolean {
-    if (s1 === undefined || s2 === undefined) return false;
-    return (s1.S.length === s2.S.length && s1.S.every((val, index) => val === s2.S[index]))
-        && (s1.Q.length === s2.Q.length && s1.Q.every((val, index) => val === s2.Q[index]));
-}
-
-function updateState_Step(state: ClacState,
-                     inputSeq: ClacOperator[],
-                     history: ClacState[],
-                     setState: Function,
-                     setInputSeq: Function,
-                     setErr: Function,
-                     setHistory: Function,
-                     inputRef: React.MutableRefObject<any>,
-                     mode: "step" | "run"
-                     ){
-    let newhistory = [...history];
-    if (mode === "step"){
-        try{
-            const newState = ClacCore.step(state);
-            if (!stateEqual(newState, history[history.length - 1])) {
-                newhistory.push(
-                    {
-                        S: [...newState.S],
-                        Q: [...newState.Q],
-                        T: newState.T
-                    }
-                );
-                setHistory(newhistory);
-            }
-            setState(newState);
-        } catch (e) {
-            setErr(e + "");
-        }
-    } else {
-        try{
-            const newState = ClacCore.run(state);
-            if (!stateEqual(newState, history[history.length - 1])) {
-                newhistory.push(
-                    {
-                        S: [...newState.S],
-                        Q: [...newState.Q],
-                        T: newState.T
-                    }
-                );
-                setHistory(newhistory);
-            }
-            setState(newState);
-        } catch (e) {
-            setErr(e + "");
-        }
-    }
-    if (inputRef.current.value !== ""){
-        inputSeq.forEach((tok) => { state.Q.push(tok); });
-        inputRef.current.value = "";
-        setInputSeq([]);
-        setState(state);
-    }
-}
+import * as ClacCore from './functions/clac_core';
 
 function App(props: any) {
     // Input from User
@@ -87,14 +24,6 @@ function App(props: any) {
     });
     // Error Handle
     const [err, setErrMessage] = useState<string>("");
-    // Settings Menu
-    const [MenuAnchor, setMenuAnchor] = React.useState<null | HTMLElement>(null);
-    const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-        setMenuAnchor(event.currentTarget);
-      };
-    const handleClose = () => {
-        setMenuAnchor(null);
-    };
     // Settings State
     const [setting, setSetting] = useState<SettingState>({
         showFunctions: false,
@@ -116,24 +45,24 @@ function App(props: any) {
                         <Button
                         variant='outlined' startIcon={<RestartAltIcon/>} color="error"
                         onClick={() => { ClacCore.restart(setClacState, setErrMessage, setHistory); }}>
-                            Restart
+                            <Typography sx={{ display: {xs: 'none', sm: 'block'} }}>Restart</Typography>
                         </Button>
                     }
                     step_btn={
                         <Button
                         variant='outlined' startIcon={<PlayArrowTwoToneIcon/>} color="success"
-                        onClick={() => updateState_Step(
+                        onClick={() => ClacCore.execute(
                             clacState, inputTokens, history, setClacState, setInputTokens, setErrMessage, setHistory, textInputRef, "step"
                         )}>
-                            Step
+                            <Typography sx={{ display: {xs: 'none', sm: 'block'} }}>Step</Typography>
                         </Button>}
                     run_btn={
                         <Button
                         variant='outlined' startIcon={<SkipNextTwoToneIcon/>} color="success"
-                        onClick={() => updateState_Step(
+                        onClick={() => ClacCore.execute(
                             clacState, inputTokens, history, setClacState, setInputTokens, setErrMessage, setHistory, textInputRef, "run"
                         )}>
-                            Run
+                            <Typography sx={{ display: {xs: 'none', sm: 'block'} }}>Run</Typography>
                         </Button>
                     }
                 />
@@ -159,47 +88,24 @@ function App(props: any) {
                         </pre>
                     </Typography>
                 </Box>
-                <Stack direction="row" sx={{justifyContent: "flex-end", alignItems: "center"}}>
-                    <IconButton
-                        onClick={handleClick}
-                    ><SettingsIcon/></IconButton>
-                </Stack>
-                <Menu
-                    id="settings"
-                    MenuListProps={{
-                        'aria-labelledby': 'long-button',
-                    }}
-                    anchorEl={MenuAnchor}
-                    open={Boolean(MenuAnchor)}
-                    onClose={handleClose}
-                    anchorOrigin={{
-                        vertical: 'bottom',
-                        horizontal: 'right',
-                    }}
-                    transformOrigin={{
-                        vertical: 'bottom',
-                        horizontal: 'right',
-                    }}
-                >
-                    <MenuItem onClick={() => {setSetting({
-                        showFunctions: setting.showFunctions,
-                        showTrace: !setting.showTrace
-                    })}}>
-                        {setting.showTrace ? <ListItemIcon><Check/></ListItemIcon> : undefined}
-                        <ListItemText inset={!setting.showTrace}>
-                            Show Trace
-                        </ListItemText>
-                    </MenuItem>
-                    <MenuItem onClick={() => {setSetting({
-                        showFunctions: !setting.showFunctions,
-                        showTrace: setting.showTrace
-                    })}}>
-                        {setting.showFunctions ? <ListItemIcon><Check/></ListItemIcon> : undefined}
-                        <ListItemText inset={!setting.showFunctions}>
-                            Show Function Table
-                        </ListItemText>
-                    </MenuItem>
-                </Menu>
+                {/* <Stack direction="row" sx={{justifyContent: "flex-end", alignItems: "center"}}>
+                </Stack> */}
+                <FormGroup row={true}>
+                    <FormControlLabel
+                        control={<Switch onChange={() => {setSetting({
+                            showFunctions: setting.showFunctions,
+                            showTrace: !setting.showTrace
+                        })}}/>}
+                        label="Show Trace"
+                    />
+                    <FormControlLabel
+                        control={<Switch onChange={() => {setSetting({
+                            showFunctions: !setting.showFunctions,
+                            showTrace: setting.showTrace
+                        })}}/>}
+                        label="Functions Table"
+                    />
+                </FormGroup>
             </Box>
             <Stack direction="row" sx={{justifyContent: "flex-end", alignItems: "center"}}>
                 <Typography variant='body2' sx={{ color: "#AAA"}}>Embeddable Clac, by <a href="https://markchenyutian.github.io/blog/about.html">Yutian Chen</a></Typography>

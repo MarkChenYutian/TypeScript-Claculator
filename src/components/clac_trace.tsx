@@ -33,7 +33,7 @@ export function ClacStateTrace(props: any) {
         <Container>
             <Typography variant='body1'>Trace</Typography>
             <TableContainer component={Paper}>
-                <Table>
+                <Table size='small'>
                     <TableHead>
                         <TableRow>
                             <TableCell>#</TableCell>

@@ -13,7 +13,7 @@ function FunctionTable( props: any ) {
         <Container>
             <Typography variant='body1'>Function Table</Typography>
             <TableContainer component={Paper}>
-                <Table>
+                <Table size='small'>
                     <TableHead>
                         <TableRow>
                             <TableCell>Symbol</TableCell>

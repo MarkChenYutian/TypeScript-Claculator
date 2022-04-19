@@ -19,7 +19,7 @@ function defineFunction(oldState: ClacState) {
     return state;
 }
 
-export function step(oldState: ClacState) {
+function step(oldState: ClacState) {
     const state: ClacState = {Q: oldState.Q, S: oldState.S, T: oldState.T};
     const tok: ClacOperator | undefined = state.Q.shift();
     if (tok === undefined) {
@@ -151,11 +151,10 @@ export function step(oldState: ClacState) {
     return state;
 }
 
-export function run(state: ClacState) {
-    while (state.Q.length > 0) {
-        state = step(state);
-    }
-    return state;
+function stateEqual(s1: ClacState, s2: ClacState): boolean {
+    if (s1 === undefined || s2 === undefined) return false;
+    return (s1.S.length === s2.S.length && s1.S.every((val, index) => val === s2.S[index]))
+        && (s1.Q.length === s2.Q.length && s1.Q.every((val, index) => val === s2.Q[index]));
 }
 
 export function restart(setState: Function, setErr: Function, setTrace: Function){
@@ -169,4 +168,68 @@ export function restart(setState: Function, setErr: Function, setTrace: Function
     setState(newState);
     setErr("");
     setTrace([]);
+}
+
+
+export function execute(
+    state: ClacState, inputSeq: ClacOperator[], history: ClacState[],
+    setState: Function, setInputSeq: Function, setErr: Function, setHistory: Function,
+    inputRef: React.MutableRefObject<any>,
+    mode: "step" | "run"
+) {
+    let newhistory = [...history];
+
+    if (inputRef.current.value !== ""){
+        inputSeq.forEach((tok) => { state.Q.push(tok); });
+        inputRef.current.value = "";
+        setInputSeq([]);
+        setState(state);
+        newhistory.push(
+            {
+                S: [...state.S],
+                Q: [...state.Q],
+                T: state.T
+            }
+        );
+        setHistory(newhistory);
+    }
+    
+    if (mode === "step"){
+        try{
+            const newState = step(state);
+            if (!stateEqual(newState, history[history.length - 1])) {
+                newhistory.push(
+                    {
+                        S: [...newState.S],
+                        Q: [...newState.Q],
+                        T: newState.T
+                    }
+                );
+                setHistory(newhistory);
+            }
+            setState(newState);
+        } catch (e) {
+            setErr(e + "");
+        }
+    } else {
+        try{
+            while (state.Q.length > 0) {
+                state = step(state);
+                if (!stateEqual(state, history[history.length - 1])) {
+                    newhistory.push(
+                        {
+                            S: [...state.S],
+                            Q: [...state.Q],
+                            T: state.T
+                        }
+                    );
+                    setHistory(newhistory);
+                }
+                setState(state);
+            }
+            
+        } catch (e) {
+            setErr(e + "");
+        }
+    }
 }
